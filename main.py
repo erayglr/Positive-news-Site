@@ -1,10 +1,12 @@
 import requests
 from send_email import send_email
+import os
 
-api_key = "0106de8847cd4e2aa147e7c51b6eb72f"
-url = ("https://newsapi.org/v2/everything?q=tesla&"
-       "from=2024-01-16&sortBy=publishedAt&"
-       "apiKey=0106de8847cd4e2aa147e7c51b6eb72f")
+topic = "tesla"
+api_key = os.getenv("firstApiKey")
+url = (f"https://newsapi.org/v2/everything?q="
+       f"{topic}&from=2024-01-19&sortBy=publishedAt&apiKey={api_key}"
+       f"&language=en")
 
 # Make request
 request = requests.get(url)
@@ -14,9 +16,11 @@ content = request.json()
 
 # Access the article titles and description
 body = ""
-for article in content["articles"]:
+for article in content["articles"][:20]:
     if article["description"] is not None:
-        body = body + article["title"] + "\n" + article["description"] + 2 * "\n"
+        body = ("Subject: Today's news" + "\n" + body + article["title"] + "\n"
+                + article["description"] + "\n"
+                + article["url"] + 2 * "\n")
 
 body = body.encode("utf-8")
 send_email(message=body)
